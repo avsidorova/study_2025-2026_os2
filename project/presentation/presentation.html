@@ -1,0 +1,368 @@
+<!DOCTYPE html>
+<html lang="ru-RU">
+<head>
+  <meta charset="utf-8">
+  <meta name="generator" content="pandoc">
+  <meta name="author" content="Сидорова А.В.">
+  <title>Доклад по теме: «Система Syslog и журналы событий в Linux»</title>
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, minimal-ui">
+  <link href="data:text/plain;charset=UTF-8;charset=utf-8,Not%20found%3A%20%2Freveal%2Ejs%404%2E6%2E1%2F%2Fdist%2Freset%2Ecss" rel="stylesheet">
+  <link href="data:text/plain;charset=UTF-8;charset=utf-8,Not%20found%3A%20%2Freveal%2Ejs%404%2E6%2E1%2F%2Fdist%2Freveal%2Ecss" rel="stylesheet">
+  <style>
+.reveal .sourceCode { 
+overflow: visible;
+}
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+div.columns{display: flex; gap: min(4vw, 1.5em);}
+div.column{flex: auto; overflow-x: auto;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+
+ul.task-list[class]{list-style: none;}
+ul.task-list li input[type="checkbox"] {
+font-size: inherit;
+width: 0.8em;
+margin: 0 0.8em 0.2em -1.6em;
+vertical-align: middle;
+}
+.display.math{display: block; text-align: center; margin: 0.5rem auto;}
+</style>
+  <link href="data:text/plain;charset=UTF-8;charset=utf-8,Not%20found%3A%20%2Freveal%2Ejs%404%2E6%2E1%2F%2Fdist%2Ftheme%2Fbeige%2Ecss" rel="stylesheet" id="theme">
+  
+</head>
+<body>
+  <div class="reveal">
+    <div class="slides">
+
+<section id="title-slide">
+  <h1 class="title">Доклад по теме: «Система Syslog и журналы событий в
+Linux»</h1>
+  <p class="subtitle">Система Syslog и журналы событий в Linux</p>
+  <p class="author">Сидорова А.В.</p>
+  <p class="institute">Российский университет дружбы народов, Москва,
+Россия</p>
+</section>
+
+<section>
+<section id="информация" class="title-slide slide level1">
+<h1>Информация</h1>
+
+</section>
+<section id="докладчик" class="slide level2">
+<h2>Докладчик</h2>
+<div class="columns" data-align="center">
+<div class="column" style="width:70%;">
+<ul>
+<li>Сидорова Арина Валерьевна</li>
+<li>студентка НПИбд-02-24</li>
+<li>ст.б. 1132242912</li>
+<li>Российский университет дружбы народов</li>
+</ul>
+</div>
+</div>
+</section>
+<section id="актуальность-работы" class="slide level2">
+<h2>Актуальность работы</h2>
+<p>Актуальность данной работы обусловлена фундаментальной ролью системы
+Syslog и её современной реализации rsyslog в обеспечении надёжности,
+безопасности и производительности ИТ-инфраструктур на базе Linux. В
+условиях роста объёмов данных и усложнения систем централизованный сбор,
+структурированное хранение и эффективный анализ журналов событий
+становятся критически важными для оперативного выявления аномалий,
+расследования инцидентов и проактивного управления инфраструктурой.</p>
+</section>
+<section id="цель-и-задачи" class="slide level2">
+<h2>Цель и задачи</h2>
+<p><strong>Цель:</strong> Изучение системы Syslog и механизмов работы с
+журналами событий в операционных системах Linux для эффективного
+управления, анализа и обеспечения безопасности системного и прикладного
+логирования</p>
+<p><strong>Задачи:</strong> 1. Раскрыть фундаментальные принципы работы
+системы Syslog, её архитектуру и ключевые компоненты. 2.
+Проанализировать практические аспекты управления журналами событий: их
+хранение, базовый анализ и инструментарий. 3. Исследовать современные
+вызовы, тенденции и перспективы развития си- стем логирования в
+контексте безопасности, масштабируемости и интеграции с новыми
+технологиями.</p>
+</section>
+<section id="объект-и-предмет-исследования" class="slide level2">
+<h2>Объект и предмет исследования</h2>
+<p><strong>Объект исследования:</strong> Процессы системного и
+прикладного логирования в операционных системах семейства Linux.</p>
+<p><strong>Предмет исследования:</strong> Система Syslog, её реализация
+(rsyslog), методы конфигурации, анализа журналов событий и их
+практическое применение в администрировании ИТ-инфраструктур.</p>
+</section>
+<section id="введение-в-логирование-и-роль-syslog" class="slide level2">
+<h2>Введение в логирование и роль Syslog</h2>
+<p>Syslog — это стандартизированный протокол и архитектура для
+централизованного логирования. Его ключевая идея заключается в отделении
+приложений, которые генерируют сообщения, от механизма их обработки,
+фильтрации и хранения. Это позволяет унифицировать процесс логирования
+для всех компонентов системы.</p>
+</section>
+<section id="архитектура-syslog-ключевые-компоненты" class="slide level2">
+<h2>Архитектура Syslog: ключевые компоненты</h2>
+<p>Архитектура включает три компонента : 1. Источники сообщений
+(системные службы, ядро ОС или оборудование, способное отправлять
+сообщения по сети) 2. Транспорт (Демон rsyslogd) 3. Назначения (Места,
+куда демон направляет полученные и обработанные сообщения - файлы
+/var/log/, консоль, именованные каналы, удаленный сервер или база
+данных)</p>
+</section>
+<section id="метаданные-сообщений-facility-и-severity" class="slide level2">
+<h2>Метаданные сообщений: Facility и Severity</h2>
+<p><strong>Факультет указывает на тип или категорию
+программы-отправителя.</strong> Существуют предопределенные факультеты,
+такие как kern (сообщения ядра), user (пользовательские приложения),
+mail (почтовая система), auth (безопасность и аутентификация), cron
+(планировщик заданий), а также локальные facility (local0–local7),
+которые могут быть настроены администратором для собственных нужд.</p>
+<p><strong>Уровень серьезности</strong> ранжирует сообщение по степени
+важности от 0 (наиболее критичный) до 7 (наименее критичный).</p>
+</section>
+<section id="конфигурация-и-фильтрация-в-rsyslog" class="slide level2">
+<h2>Конфигурация и фильтрация в Rsyslog</h2>
+<ul>
+<li><p>Логика обработки сообщений настраивается через конфигурационный
+файл демона, который в случае с rsyslog находится по пути
+/etc/rsyslog.conf.</p></li>
+<li><p>Синтаксис правил в этом файле имеет вид «Facility.Severity
+Destination».</p></li>
+<li><p>Например, правило «mail. /var/log/mail.log» означает, что все
+сообщения от почтовой системы любого уровня серьезности должны
+записываться в указанный файл</p></li>
+</ul>
+</section>
+<section id="проблемы-и-современные-решения-классического-syslog" class="slide level2">
+<h2>Проблемы и современные решения классического Syslog</h2>
+<ul>
+<li>Постоянный рост объема логов решается с помощью утилиты logrotate,
+которая автоматически архивирует, сжимает и удаляет старые файлы
+журналов по расписанию.</li>
+<li>Проблема безопасности, связанная с передачей данных в открытом виде
+по UDP, решается в rsyslog поддержкой шифрования и передачи по TCP.</li>
+<li>Наиболее актуальной современной задачей является централизованный
+сбор и анализ логов с множества серверов и устройств. Для этого
+настраивается выделенный log-сервер, на который все хосты в сети
+отправляют свои сообщения.</li>
+</ul>
+</section>
+<section id="современные-подходы-и-интеграция" class="slide level2">
+<h2>Современные подходы и интеграция</h2>
+<p><strong>Развитие технологий логирования привело к появлению новых
+концепций и требований к системам сбора журналов.</strong></p>
+<p>Одной из таких концепций является структурированное логирование,
+которое коренным образом отличается от традиционного текстового
+подхода.</p>
+<p>Вместо простых строковых сообщений, структурированное логирование
+использует форматы вроде JSON, которые позволяют сохранять данные в виде
+пар “ключ-значение”.</p>
+<p>Это значительно упрощает последующий анализ и фильтрацию логов,
+поскольку системы могут легко извлекать конкретные поля без
+необходимости сложного парсинга текста.</p>
+</section>
+<section id="обеспечение-безопасности-и-надежности" class="slide level2">
+<h2>Обеспечение безопасности и надежности</h2>
+<p><strong>Важным аспектом современного логирования является
+безопасность передаваемых данных.</strong></p>
+<p>Традиционный Syslog использует протокол UDP, который не обеспечивает
+гарантированной доставки сообщений и не защищает данные от
+прослушивания.</p>
+<p>В современных условиях это неприемлемо, особенно при передаче
+чувствительной информации, такой как логи аутентификации.</p>
+<p>Rsyslog решает эту проблему, поддерживая передачу данных по TCP с
+возможностью использования TLS-шифрования.</p>
+</section>
+<section id="обработка-больших-объемов-данных" class="slide level2">
+<h2>Обработка больших объемов данных</h2>
+<p>Еще одним вызовом для традиционных систем логирования является
+обработка больших объемов данных.</p>
+<p>В высоконагруженных системах может генерироваться несколько гигабайт
+логов в час, и классическая запись в текстовые файлы становится узким
+местом. Современные системы решают эту проблему несколькими
+способами.</p>
+<p>Во-первых, используется буферизация сообщений в оперативной памяти с
+последующей асинхронной записью на диск, что снижает нагрузку на
+подсистему ввода-вывода.</p>
+<p>Во-вторых, поддерживается запись непосредственно в базы данных (такие
+как MySQL, PostgreSQL) или специализированные системы хранения временных
+рядов, которые лучше оптимизированы для работы с большими объемами
+данных и сложными запросами.</p>
+</section>
+<section id="заключение" class="slide level2">
+<h2>Заключение</h2>
+<p>Система Syslog, и в частности ее современная реализация rsyslog,
+представляет собой фундаментальный и гибкий механизм управления
+журналами событий в Linux. Понимание ее архитектуры, принципов работы с
+факультетами и уровнями серьезности, а также владение навыками настройки
+и анализа являются неотъемлемой частью компетенции любого системного
+администратора.</p>
+</section></section>
+    </div>
+  </div>
+
+  <script src="data:text/plain;charset=UTF-8;charset=utf-8,Not%20found%3A%20%2Freveal%2Ejs%404%2E6%2E1%2F%2Fdist%2Freveal%2Ejs"></script>
+
+  <!-- reveal.js plugins -->
+  <script src="data:text/plain;charset=UTF-8;charset=utf-8,Not%20found%3A%20%2Freveal%2Ejs%404%2E6%2E1%2F%2Fplugin%2Fnotes%2Fnotes%2Ejs"></script>
+  <script src="data:text/plain;charset=UTF-8;charset=utf-8,Not%20found%3A%20%2Freveal%2Ejs%404%2E6%2E1%2F%2Fplugin%2Fsearch%2Fsearch%2Ejs"></script>
+  <script src="data:text/plain;charset=UTF-8;charset=utf-8,Not%20found%3A%20%2Freveal%2Ejs%404%2E6%2E1%2F%2Fplugin%2Fzoom%2Fzoom%2Ejs"></script>
+
+  <script>
+
+      // Full list of configuration options available at:
+      // https://revealjs.com/config/
+      Reveal.initialize({
+        // Display controls in the bottom right corner
+        controls: true,
+
+        // Help the user learn the controls by providing hints, for example by
+        // bouncing the down arrow when they first encounter a vertical slide
+        controlsTutorial: true,
+
+        // Determines where controls appear, "edges" or "bottom-right"
+        controlsLayout: 'bottom-right',
+
+        // Visibility rule for backwards navigation arrows; "faded", "hidden"
+        // or "visible"
+        controlsBackArrows: 'faded',
+
+        // Display a presentation progress bar
+        progress: true,
+
+        // Display the page number of the current slide
+        slideNumber: false,
+
+        // 'all', 'print', or 'speaker'
+        showSlideNumber: 'all',
+
+        // Add the current slide number to the URL hash so that reloading the
+        // page/copying the URL will return you to the same slide
+        hash: true,
+
+        // Start with 1 for the hash rather than 0
+        hashOneBasedIndex: false,
+
+        // Flags if we should monitor the hash and change slides accordingly
+        respondToHashChanges: true,
+
+        // Push each slide change to the browser history
+        history: false,
+
+        // Enable keyboard shortcuts for navigation
+        keyboard: true,
+
+        // Enable the slide overview mode
+        overview: true,
+
+        // Disables the default reveal.js slide layout (scaling and centering)
+        // so that you can use custom CSS layout
+        disableLayout: false,
+
+        // Vertical centering of slides
+        center: true,
+
+        // Enables touch navigation on devices with touch input
+        touch: true,
+
+        // Loop the presentation
+        loop: false,
+
+        // Change the presentation direction to be RTL
+        rtl: false,
+
+        // see https://revealjs.com/vertical-slides/#navigation-mode
+        navigationMode: 'default',
+
+        // Randomizes the order of slides each time the presentation loads
+        shuffle: false,
+
+        // Turns fragments on and off globally
+        fragments: true,
+
+        // Flags whether to include the current fragment in the URL,
+        // so that reloading brings you to the same fragment position
+        fragmentInURL: true,
+
+        // Flags if the presentation is running in an embedded mode,
+        // i.e. contained within a limited portion of the screen
+        embedded: false,
+
+        // Flags if we should show a help overlay when the questionmark
+        // key is pressed
+        help: true,
+
+        // Flags if it should be possible to pause the presentation (blackout)
+        pause: true,
+
+        // Flags if speaker notes should be visible to all viewers
+        showNotes: false,
+
+        // Global override for autoplaying embedded media (null/true/false)
+        autoPlayMedia: null,
+
+        // Global override for preloading lazy-loaded iframes (null/true/false)
+        preloadIframes: null,
+
+        // Number of milliseconds between automatically proceeding to the
+        // next slide, disabled when set to 0, this value can be overwritten
+        // by using a data-autoslide attribute on your slides
+        autoSlide: 0,
+
+        // Stop auto-sliding after user input
+        autoSlideStoppable: true,
+
+        // Use this method for navigation when auto-sliding
+        autoSlideMethod: null,
+
+        // Specify the average time in seconds that you think you will spend
+        // presenting each slide. This is used to show a pacing timer in the
+        // speaker view
+        defaultTiming: null,
+
+        // Enable slide navigation via mouse wheel
+        mouseWheel: false,
+
+        // The display mode that will be used to show slides
+        display: 'block',
+
+        // Hide cursor if inactive
+        hideInactiveCursor: true,
+
+        // Time before the cursor is hidden (in ms)
+        hideCursorTime: 5000,
+
+        // Opens links in an iframe preview overlay
+        previewLinks: false,
+
+        // Transition style (none/fade/slide/convex/concave/zoom)
+        transition: 'slide',
+
+        // Transition speed (default/fast/slow)
+        transitionSpeed: 'default',
+
+        // Transition style for full page slide backgrounds
+        // (none/fade/slide/convex/concave/zoom)
+        backgroundTransition: 'fade',
+
+        // Number of slides away from the current that are visible
+        viewDistance: 3,
+
+        // Number of slides away from the current that are visible on mobile
+        // devices. It is advisable to set this to a lower number than
+        // viewDistance in order to save resources.
+        mobileViewDistance: 2,
+
+        // reveal.js plugins
+        plugins: [
+          RevealNotes,
+          RevealSearch,
+          RevealZoom
+        ]
+      });
+    </script>
+    </body>
+</html>
