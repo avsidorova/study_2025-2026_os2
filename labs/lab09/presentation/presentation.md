@@ -1,8 +1,8 @@
 ---
 ## Front matter
 lang: ru-RU
-title: Лабораторная работа №8
-subtitle: Планировщики событий
+title: Лабораторная работа №9
+subtitle: Управление SELinux
 author:
   - Сидорова А.В.
 institute:
