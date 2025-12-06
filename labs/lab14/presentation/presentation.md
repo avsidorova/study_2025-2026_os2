@@ -1,8 +1,8 @@
 ---
 ## Front matter
 lang: ru-RU
-title: Лабораторная работа №13
-subtitle: Фильтр пакетов
+title: Лабораторная работа №14
+subtitle: Партиции, файловые системы, монтирование
 author:
   - Сидорова А.В.
 institute:
